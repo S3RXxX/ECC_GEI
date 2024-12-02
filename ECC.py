@@ -59,6 +59,11 @@ def curve_order():
     return generator_order
 
 if __name__=="__main__":
+    """
+    TODO:
+        -https://pypi.org/project/ECPy/
+        -
+    """
     G = curve.generator
     generator_order = curve.order
     print(f"Generador de la curva: {G}")
