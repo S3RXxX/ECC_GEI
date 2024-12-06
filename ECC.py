@@ -6,9 +6,6 @@ from ecpy.keys import ECPublicKey, ECPrivateKey
 from ecpy.ecdsa import ECDSA
 from hashlib import sha256
 
-# Inicializa la curva elíptica
-curve_name = "secp256k1"
-curve = Curve.get_curve(curve_name)  # Usa una curva estándar
 
 def read_input(file_path=''):
     """
@@ -42,9 +39,12 @@ def point_order(point):
 
 
 # Generar una clave privada y calcular la pública
-def generate_keypair():
-    private_key = Key.gen_private_key(curve_name)
-    public_key = Key.get_public_key(private_key, curve_name)
+def generate_keypair(curve,Qx=None, Qy=None, pv_key=None):
+    public_key = ECPublicKey(Point(0x65d5b8bf9ab1801c9f168d4815994ad35f1dcb6ae6c7a1a303966b677b813b00,
+                       0xe6b865e529b8ecbf71cf966e900477d49ced5846d7662dd2dd11ccd55c0aff7f,
+                       curve))
+    private_key = ECPrivateKey(0xfb26a4e75eec75544c0f44e937dcf5ee6355c7176600b9688c667e5c283b43c5,
+                  curve)
     return private_key, public_key
 
 
@@ -64,13 +64,17 @@ if __name__=="__main__":
         -https://pypi.org/project/ECPy/
         -
     """
+    # Inicializa la curva elíptica
+    curve_name = "secp256k1"
+    curve = Curve.get_curve(curve_name)  # Canviar per la que toqui
+    
     G = curve.generator
     generator_order = curve.order
     print(f"Generador de la curva: {G}")
     print(f"Orden del generador: {generator_order}")
 
     # Generar claves
-    private_key, public_key = generate_keypair()
+    private_key, public_key = generate_keypair(curve=curve)
     print(f"Clave privada: {private_key}")
     print(f"Clave pública: {public_key}")
 
