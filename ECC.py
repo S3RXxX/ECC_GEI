@@ -13,50 +13,51 @@ def read_input(file_path=''):
     """
     with open(file=file_path) as f:
         f.read()
-        # p, b, G, n (curva estandar)
+        # p, a, b, G, n (nombre curva estandar)
+        
         # Qx
         # Qy
+
         # f1
         # f2
+
         # message
 
 
+# Devuelve el número (orden) de puntos de la curva
+def curve_order(curve):
+    generator_order = curve.order
+    return generator_order
 
-    
 # Verificar si un punto pertenece a la curva
-def is_on_curve(point):
-    x, y = point
-    return curve.is_on_curve(x, y)
+def is_on_curve(curve, point):
+    return curve.is_on_curve(point)
 
 # Calcular el orden de un punto
 def point_order(point):
-    P = Point(point[0], point[1], curve)
+    P = point
     order = 1
-    while not P.is_infinite():
-        P = P + Point(point[0], point[1], curve)
+    while not P.is_infinity:
+        P = P + point
         order += 1
+        print(order)
     return order
 
 
 # Generar una clave privada y calcular la pública
-def generate_keypair(curve,Qx=None, Qy=None, pv_key=None):
-    public_key = ECPublicKey(Point(0x65d5b8bf9ab1801c9f168d4815994ad35f1dcb6ae6c7a1a303966b677b813b00,
-                       0xe6b865e529b8ecbf71cf966e900477d49ced5846d7662dd2dd11ccd55c0aff7f,
-                       curve))
-    private_key = ECPrivateKey(0xfb26a4e75eec75544c0f44e937dcf5ee6355c7176600b9688c667e5c283b43c5,
-                  curve)
+def generate_keypair(curve,Q, d):
+    public_key = ECPublicKey(Q)
+    private_key = ECPrivateKey(d, curve)
     return private_key, public_key
 
 
 # Verificar una firma ECDSA
 def verify_ecdsa_signature(public_key, message, signature):
     ecdsa = ECDSA()
-    hashed_message = int.from_bytes(sha256(message).digest(), byteorder='big')
-    return ecdsa.verify(signature, hashed_message, public_key, curve)
+    # hashed_message = int.from_bytes(sha256(message).digest(), byteorder='big')
+    return ecdsa.verify(message, signature, public_key)
 
-def curve_order():
-    generator_order = curve.order
-    return generator_order
+
 
 if __name__=="__main__":
     """
@@ -64,30 +65,51 @@ if __name__=="__main__":
         -https://pypi.org/project/ECPy/
         -
     """
-    # Inicializa la curva elíptica
+    # Inicializa la curva elíptica (substituir pel de Wireshark)
     curve_name = "secp256k1"
     curve = Curve.get_curve(curve_name)  # Canviar per la que toqui
     
     G = curve.generator
-    generator_order = curve.order
-    print(f"Generador de la curva: {G}")
+    generator_order = curve_order(curve=curve)
+    # print(f"Generador de la curva: {G}")
+    print()
+    print("Apartado a:")
     print(f"Orden del generador: {generator_order}")
+    print(f"Es el orden primo?: {sp.isprime(generator_order)}")
+    print()
 
-    # Generar claves
-    private_key, public_key = generate_keypair(curve=curve)
-    print(f"Clave privada: {private_key}")
-    print(f"Clave pública: {public_key}")
+    # Point (substituir pel llegit a Wireshark)
+    P = Point(0x65d5b8bf9ab1801c9f168d4815994ad35f1dcb6ae6c7a1a303966b677b813b00,
+                       0xe6b865e529b8ecbf71cf966e900477d49ced5846d7662dd2dd11ccd55c0aff7f,
+                       curve, check=False)  
+    # si check=True (default) lanza excepción si el punto no está en la curva
+
+    # Generar claves (borrar clau privada)
+    d = 0xfb26a4e75eec75544c0f44e937dcf5ee6355c7176600b9688c667e5c283b43c5
+    private_key, public_key = generate_keypair(curve=curve, Q=P, d=d)
+    # print(f"Clave privada: {private_key}")
+    # print(f"Clave pública: {public_key}")
+    # print()
 
     # Verificar si el punto público está en la curva
-    print(f"La clave pública está en la curva: {is_on_curve((public_key.Wx, public_key.Wy))}")
+    print(f"Apartado b: ")
+    print(f"La clave pública está en la curva?: {is_on_curve(curve, P)}")
+    print()
 
-    # Crear y verificar una firma ECDSA
+    print("Apartado c: (NOOOOOOOOOOOOOOOOOOOO)")
+    # print(f"Orden del punto de la clave pública: {point_order(P)}")
+    print()
+
+    # Crear y verificar una firma ECDSA (substituir per f1, f2 de Wireshark)
+    # (borrar)
     message = b"Este es un mensaje de prueba"
     ecdsa = ECDSA()
-    hashed_message = int.from_bytes(sha256(message).digest(), byteorder='big')
-    signature = ecdsa.sign(hashed_message, private_key, curve)
-    print(f"Firma: {signature}")
+    signature = ecdsa.sign(message, private_key, curve)
+    # print(f"Firma: {signature}")
+    # print()
 
     # Verificar la firma
     is_valid = verify_ecdsa_signature(public_key, message, signature)
+    print("Apartado d: ")
     print(f"¿Firma válida? {is_valid}")
+    print()
