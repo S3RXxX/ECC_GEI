@@ -34,15 +34,20 @@ def is_on_curve(curve, point):
     return curve.is_on_curve(point)
 
 # Calcular el orden de un punto
-def point_order(point):
-    P = point
-    order = 1
-    while not P.is_infinity:
-        P = P + point
-        order += 1
-        print(order)
-    return order
+def point_order(point, curve):
+    """El orden de un punto es un divisor del número de puntos de la curva"""
+    c = curve_order(curve)
+    
+    possible_orders = sp.factorint(c)
+    # print(possible_orders)
 
+    P = point
+    print(P)
+    print(P.infinity())
+
+    for n, k in possible_orders.items():
+        if P*n == P.infinity():
+            return n
 
 # Generar una clave privada y calcular la pública
 def generate_keypair(curve,Q, d):
@@ -97,7 +102,7 @@ if __name__=="__main__":
     print()
 
     print("Apartado c: (NOOOOOOOOOOOOOOOOOOOO)")
-    # print(f"Orden del punto de la clave pública: {point_order(P)}")
+    print(f"Orden del punto de la clave pública: {point_order(P, curve)}")
     print()
 
     # Crear y verificar una firma ECDSA (substituir per f1, f2 de Wireshark)
