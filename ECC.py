@@ -7,21 +7,27 @@ from ecpy.ecdsa import ECDSA
 from hashlib import sha256
 
 
-def read_input(file_path=''):
+def read_data(file_path=''):
     """
     Read variables needed to perform ECC calculations: p, b, Gx, Gy, n, Qx, Qy, f1, f2, message
     """
     with open(file=file_path) as f:
-        f.read()
-        # p, a, b, G, n (nombre curva estandar)
+        f.readline()
+        # curve_name (p, a, b, G, n) (nombre curva estandar)
+        curve_name = f.readline().strip().split(" ")[1]
         
-        # Qx
-        # Qy
+        # Q = (Qx, Qy)
+        Q = f.readline().split(" ")[1:3]
+        Q = (int(Q[0], 16), int(Q[1], 16))
 
-        # f1
-        # f2
+    #     # f (f1, f2)
+    #     f.readline().split(" ")[1:3]
 
-        # message
+    #     # message
+    #     m = f.readline().strip().split(" ")[1]
+    f, m = None, None
+    
+    return curve_name, Q, f, m
 
 
 # Devuelve el número (orden) de puntos de la curva
@@ -36,15 +42,10 @@ def is_on_curve(curve, point):
 # Calcular el orden de un punto
 def point_order(point, curve):
     """El orden de un punto es un divisor del número de puntos de la curva"""
-    c = curve_order(curve)
-    
+    c = curve_order(curve) 
     possible_orders = sp.factorint(c)
     # print(possible_orders)
-
     P = point
-    print(P)
-    print(P.infinity())
-
     for n, k in possible_orders.items():
         if P*n == P.infinity():
             return n
@@ -67,26 +68,23 @@ def verify_ecdsa_signature(public_key, message, signature):
 if __name__=="__main__":
     """
     TODO:
-        -https://pypi.org/project/ECPy/
+        - Preguntes: ordre del punt si ordre curva primer (q) n = 1, q?
         -
     """
-    # Inicializa la curva elíptica (substituir pel de Wireshark)
-    curve_name = "secp256k1"
-    curve = Curve.get_curve(curve_name)  # Canviar per la que toqui
-    
+    # Inicializa la curva elíptica
+    curve_name, (Qx, Qy), f, m = read_data(file_path="./DATA.txt")
+    curve = Curve.get_curve(curve_name)
     G = curve.generator
     generator_order = curve_order(curve=curve)
-    # print(f"Generador de la curva: {G}")
+
     print()
     print("Apartado a:")
     print(f"Orden del generador: {generator_order}")
     print(f"Es el orden primo?: {sp.isprime(generator_order)}")
     print()
 
-    # Point (substituir pel llegit a Wireshark)
-    P = Point(0x65d5b8bf9ab1801c9f168d4815994ad35f1dcb6ae6c7a1a303966b677b813b00,
-                       0xe6b865e529b8ecbf71cf966e900477d49ced5846d7662dd2dd11ccd55c0aff7f,
-                       curve, check=False)  
+    # Point
+    P = Point(Qx, Qy, curve, check=False)  
     # si check=True (default) lanza excepción si el punto no está en la curva
 
     # Generar claves (borrar clau privada)
@@ -101,7 +99,7 @@ if __name__=="__main__":
     print(f"La clave pública está en la curva?: {is_on_curve(curve, P)}")
     print()
 
-    print("Apartado c: (NOOOOOOOOOOOOOOOOOOOO)")
+    print("Apartado c: ")
     print(f"Orden del punto de la clave pública: {point_order(P, curve)}")
     print()
 
