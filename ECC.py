@@ -5,9 +5,15 @@ from ecpy.curves import Point, Curve
 from ecpy.keys import ECPublicKey, ECPrivateKey
 from ecpy.ecdsa import ECDSA
 from hashlib import sha256
+import asn1
 
 def read_ASN(s):
-    pass
+    encoded_bytes = bytes(s, 'utf-8')
+    decoder = asn1.Decoder()
+    decoder.start(encoded_bytes)
+    tag, value = decoder.read()
+    # print(tag, value)
+    return None
 
 def read_data(file_path=''):
     """
@@ -29,7 +35,7 @@ def read_data(file_path=''):
         Q = (Qx, Qy)
 
     #     # f (f1, f2)
-        f = file.readline().split(" ")[1:3]
+        f = file.readline().strip().split(" ")[1]
         f = read_ASN(f)
         
 
