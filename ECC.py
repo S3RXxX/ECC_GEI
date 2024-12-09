@@ -6,26 +6,36 @@ from ecpy.keys import ECPublicKey, ECPrivateKey
 from ecpy.ecdsa import ECDSA
 from hashlib import sha256
 
+def read_ASN(s):
+    pass
 
 def read_data(file_path=''):
     """
     Read variables needed to perform ECC calculations: p, b, Gx, Gy, n, Qx, Qy, f1, f2, message
     """
-    with open(file=file_path) as f:
-        f.readline()
+    with open(file=file_path) as file:
+        file.readline()
         # curve_name (p, a, b, G, n) (nombre curva estandar)
-        curve_name = f.readline().strip().split(" ")[1]
+        curve_name = file.readline().strip().split(" ")[1]
         
         # Q = (Qx, Qy)
-        Q = f.readline().split(" ")[1:3]
-        Q = (int(Q[0], 16), int(Q[1], 16))
+        # Q = file.readline().split(" ")[1:3]
+        # Q = (int(Q[0], 16), int(Q[1], 16))
+        Q = file.readline().strip().split(" ")[1]
+        if Q[0:2] == '04':
+            mid = 8*8+2
+            Qx = int(Q[2:mid],16)
+            Qy = int(Q[mid:],16)
+        Q = (Qx, Qy)
 
     #     # f (f1, f2)
-    #     f.readline().split(" ")[1:3]
+        f = file.readline().split(" ")[1:3]
+        f = read_ASN(f)
+        
 
     #     # message
-    #     m = f.readline().strip().split(" ")[1]
-    f, m = None, None
+    #     m = file.readline().strip().split(" ")[1]
+    m = None
     
     return curve_name, Q, f, m
 
