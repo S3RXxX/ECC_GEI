@@ -5,15 +5,19 @@ from ecpy.curves import Point, Curve
 from ecpy.keys import ECPublicKey, ECPrivateKey
 from ecpy.ecdsa import ECDSA
 from hashlib import sha256
-import asn1
+from pyasn1.codec.der.decoder import decode
+from pyasn1.type.univ import Sequence
 
-def read_ASN(s):
-    encoded_bytes = bytes(s, 'utf-8')
-    decoder = asn1.Decoder()
-    decoder.start(encoded_bytes)
-    tag, value = decoder.read()
-    # print(tag, value)
-    return None
+
+def read_ASN(hex_string):
+    # Convert the hex string to bytes
+    encoded_bytes = bytes.fromhex(hex_string)
+    
+    # Decode the ASN.1 data
+    decoded_data, _ = decode(encoded_bytes, asn1Spec=Sequence())
+    
+    # Process the decoded data as needed
+    return int(decoded_data[0]), int(decoded_data[1])
 
 def read_data(file_path=''):
     """
@@ -37,6 +41,7 @@ def read_data(file_path=''):
     #     # f (f1, f2)
         f = file.readline().strip().split(" ")[1]
         f = read_ASN(f)
+        
         
 
     #     # message
@@ -88,7 +93,7 @@ if __name__=="__main__":
         -
     """
     # Inicializa la curva elíptica
-    curve_name, (Qx, Qy), f, m = read_data(file_path="./DATA.txt")
+    curve_name, (Qx, Qy), (f1, f2), m = read_data(file_path="./DATA.txt")
     curve = Curve.get_curve(curve_name)
     G = curve.generator
     generator_order = curve_order(curve=curve)
@@ -124,7 +129,8 @@ if __name__=="__main__":
     message = b"Este es un mensaje de prueba"
     ecdsa = ECDSA()
     signature = ecdsa.sign(message, private_key, curve)
-    # print(f"Firma: {signature}")
+    print(type(signature))
+    print(f"Firma: {signature}")
     # print()
 
     # Verificar la firma
