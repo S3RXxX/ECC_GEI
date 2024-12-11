@@ -19,6 +19,16 @@ def read_ASN(hex_string):
     # Process the decoded data as needed
     return int(decoded_data[0]), int(decoded_data[1])
 
+
+def convert_signature_to_bytes(f1, f2):
+    """
+    Converts integers f1 and f2 to ECPy-compatible signature format (tuple of bytes).
+    """
+    byte_length = (f1.bit_length() + 7) // 8  # Minimum number of bytes to represent f1
+    # byte_length = 35
+    return f1.to_bytes(byte_length, byteorder='big') + f2.to_bytes(byte_length, byteorder='big')
+
+
 def read_data(file_path=''):
     """
     Read variables needed to perform ECC calculations: p, b, Gx, Gy, n, Qx, Qy, f1, f2, message
@@ -84,6 +94,13 @@ def verify_ecdsa_signature(public_key, message, signature):
     # hashed_message = int.from_bytes(sha256(message).digest(), byteorder='big')
     return ecdsa.verify(message, signature, public_key)
 
+def calcula_preambulo():
+    preambulo = bytes([0x20] * 64)    
+    s = "TLS 1.3, server CertificateVerify".encode("ascii")
+    preambulo += s
+    preambulo += bytes([0x00])
+    return preambulo
+
 
 
 if __name__=="__main__":
@@ -94,9 +111,16 @@ if __name__=="__main__":
     """
     # Inicializa la curva elíptica
     curve_name, (Qx, Qy), (f1, f2), m = read_data(file_path="./DATA.txt")
+    f = convert_signature_to_bytes(f1, f2)
+    preambulo = calcula_preambulo()
+    
+    # print(type(f), len(f))
+    # print(f)
+
     curve = Curve.get_curve(curve_name)
     G = curve.generator
     generator_order = curve_order(curve=curve)
+
 
     print()
     print("Apartado a:")
@@ -127,14 +151,14 @@ if __name__=="__main__":
     # Crear y verificar una firma ECDSA (substituir per f1, f2 de Wireshark)
     # (borrar)
     message = b"Este es un mensaje de prueba"
-    ecdsa = ECDSA()
-    signature = ecdsa.sign(message, private_key, curve)
-    print(type(signature))
-    print(f"Firma: {signature}")
-    # print()
+    # ecdsa = ECDSA()
+    # signature = ecdsa.sign(message, private_key, curve)
+    # print(type(signature), len(signature))
+    # print(f"Firma: {signature}")
+    # # print()
 
     # Verificar la firma
-    is_valid = verify_ecdsa_signature(public_key, message, signature)
+    is_valid = verify_ecdsa_signature(public_key, message, f)
     print("Apartado d: ")
     print(f"¿Firma válida? {is_valid}")
     print()
