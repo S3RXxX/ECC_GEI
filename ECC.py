@@ -50,7 +50,7 @@ def read_data(file_path=''):
 
     #     # f (f1, f2)
         f = file.readline().strip().split(" ")[1]
-        f = read_ASN(f)
+        
         
         
 
@@ -110,8 +110,14 @@ if __name__=="__main__":
         -
     """
     # Inicializa la curva elíptica
-    curve_name, (Qx, Qy), (f1, f2), m = read_data(file_path="./DATA.txt")
-    f = convert_signature_to_bytes(f1, f2)
+    curve_name, (Qx, Qy), f, m = read_data(file_path="./DATA.txt")
+    f = int(f, 16)
+    byte_length = (f.bit_length() + 7) // 8
+    f = f.to_bytes(byte_length)
+    
+    # print(type(f), len(f),f)
+    # f = read_ASN(f)
+    # f = convert_signature_to_bytes(f1, f2)
     preambulo = calcula_preambulo()
     
     # print(type(f), len(f))
