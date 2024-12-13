@@ -1,3 +1,9 @@
 METADATA wireshark
 65: --> TLS_AES_128_GCM_SHA256
 Paquete certificate: 67--> Q, curve_name + sha256, f; 72, 
+
+
+
+51, 54, 57
+curve_name sha256
+0429fef70279c982b52644e9c9bf063ecf49a2d2eafe3154e353dd7bef217923a820d71e3974bf5c0f856ba16c518548c2b81110a8c32de52208beab40cf3c440e

@@ -4,7 +4,7 @@ import sympy as sp
 from ecpy.curves import Point, Curve
 from ecpy.keys import ECPublicKey, ECPrivateKey
 from ecpy.ecdsa import ECDSA
-from hashlib import sha256
+import hashlib
 from pyasn1.codec.der.decoder import decode
 from pyasn1.type.univ import Sequence
 
@@ -29,7 +29,7 @@ def convert_signature_to_bytes(f1, f2):
     return f1.to_bytes(byte_length, byteorder='big') + f2.to_bytes(byte_length, byteorder='big')
 
 
-def read_data(file_path=''):
+def read_data(file_path='', m_path=""):
     """
     Read variables needed to perform ECC calculations: p, b, Gx, Gy, n, Qx, Qy, f1, f2, message
     """
@@ -52,11 +52,13 @@ def read_data(file_path=''):
         f = file.readline().strip().split(" ")[1]
         
         
-        
+    sha256_hash = hashlib.sha256()
 
+    with open(file=m_path, mode="rb") as file:
     #     # message
-    #     m = file.readline().strip().split(" ")[1]
-    m = None
+        m = file.read()
+        sha256_hash.update(m)
+        m = sha256_hash.hexdigest()
     
     return curve_name, Q, f, m
 
@@ -95,10 +97,15 @@ def verify_ecdsa_signature(public_key, message, signature):
     return ecdsa.verify(message, signature, public_key)
 
 def calcula_preambulo():
-    preambulo = bytes([0x20] * 64)    
-    s = "TLS 1.3, server CertificateVerify".encode("ascii")
-    preambulo += s
-    preambulo += bytes([0x00])
+    # preambulo = bytes([0x20] * 64)    
+    # s = "TLS 1.3, server CertificateVerify".encode("ascii")
+    # preambulo += s
+    # preambulo += bytes([0x00])
+    preambulo = "20"*64
+    s = "TLS 1.3, server CertificateVerify"
+    for c in s:
+        preambulo += hex(ord(c))[2:]
+    preambulo+="00"
     return preambulo
 
 
@@ -110,16 +117,24 @@ if __name__=="__main__":
         -
     """
     # Inicializa la curva elíptica
-    curve_name, (Qx, Qy), f, m = read_data(file_path="./DATA.txt")
+    curve_name, (Qx, Qy), f, m = read_data(file_path="./DATA.txt", m_path="./m.bin")
     f = int(f, 16)
     byte_length = (f.bit_length() + 7) // 8
     f = f.to_bytes(byte_length)
     
+    # print(type(m), m)
     # print(type(f), len(f),f)
     # f = read_ASN(f)
     # f = convert_signature_to_bytes(f1, f2)
     preambulo = calcula_preambulo()
-    
+    # print(preambulo)
+    # sha256(preambulo+m)
+    sha256_hash = hashlib.sha256()
+    message_bytes = bytes.fromhex(preambulo+m)
+    sha256_hash.update(message_bytes)
+    message = sha256_hash.hexdigest()
+    # print("message", message)
+    message = bytes.fromhex(message)
     # print(type(f), len(f))
     # print(f)
 
@@ -156,15 +171,18 @@ if __name__=="__main__":
 
     # Crear y verificar una firma ECDSA (substituir per f1, f2 de Wireshark)
     # (borrar)
-    message = b"Este es un mensaje de prueba"
+    # message = b"Este es un mensaje de prueba"
     # ecdsa = ECDSA()
     # signature = ecdsa.sign(message, private_key, curve)
     # print(type(signature), len(signature))
     # print(f"Firma: {signature}")
     # # print()
 
+    print(message)
     # Verificar la firma
     is_valid = verify_ecdsa_signature(public_key, message, f)
     print("Apartado d: ")
     print(f"¿Firma válida? {is_valid}")
     print()
+
+    # TLS.. --> 54 ... 79
