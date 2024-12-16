@@ -26,10 +26,10 @@ def read_ASN(hex_string):
     return int(decoded_data[0]), int(decoded_data[1])
 
 
-def do_sign(message=b"", cv=Curve.get_curve('secp256k1')):
+def do_sign(message=b"", cv=Curve.get_curve('secp256k1'), pub_key=None):
     k = 373
-    
-    pu_key = ECPublicKey(Point(0x65d5b8bf9ab1801c9f168d4815994ad35f1dcb6ae6c7a1a303966b677b813b00,
+    if not pub_key:
+        pu_key = ECPublicKey(Point(0x65d5b8bf9ab1801c9f168d4815994ad35f1dcb6ae6c7a1a303966b677b813b00,
                         0xe6b865e529b8ecbf71cf966e900477d49ced5846d7662dd2dd11ccd55c0aff7f,
                         cv))
     pv_key = ECPrivateKey(0xfb26a4e75eec75544c0f44e937dcf5ee6355c7176600b9688c667e5c283b43c5,
@@ -46,9 +46,6 @@ def to_bytes(n):
     # byte_length = 35
     return n.to_bytes(byte_length, byteorder='big')
 
-def tuple_2_ASN(t):
-    t
-    return None
 
 class TwoElementSequence(Sequence):
     componentType = NamedTypes(
@@ -78,6 +75,13 @@ def read_certificate(filepath):
     cert = x509.load_pem_x509_certificate(cert_data, default_backend())
     return cert
 
+
+# Verificar una firma ECDSA
+def verify_ecdsa_signature(public_key, message, signature):
+    ecdsa = ECDSA()
+    # hashed_message = int.from_bytes(sha256(message).digest(), byteorder='big')
+    return ecdsa.verify(message, signature, public_key)
+
 if __name__=="__main__":
     Sergi=None
 
@@ -104,11 +108,11 @@ if __name__=="__main__":
     ###################################
     ## k igual per 2 firmes ECDSA #####
     ###################################
-    # m1 = 0xb565aed85c06be130291043bae2b1b07d365a6a20639c23af7e28c28475845735293a4aa0fb2d6c8ce39495f6cb9 # b'aaa'
-    # m2 = 0x27e4034d4ec68d5e00effb471f36846bb23b047b6aac2f553a19f453b64f3383bd4e0dce544d207ebf70026c720f3b2 # b'bbb'
-    # r1, s1 = (39114490408959693022993893352951250957973636274369807237760469443903563251418076614673618818, 45984492087376670338245090636105200387310420685172271030852834788824306821807989229365764943)
-    # r2, s2 = (39114490408959693022993893352951250957973636274369807237760469443903563251418076614673618818, 44591094252700266272083279870283675274577206797140126838835766993941374021025418786657830619)
-    # cv   = Curve.get_curve('secp521r1')
+    # m1 = 0x8708878e50041df55aeaf58e1ee03dc723aab45d36d47f4e1d49597b35aa6eb2f29b815b3131a4d8225610e909c4ca2f # b'aaa'
+    # m2 = 0x47147e25d90562e96e978cff70ff1c208a482c28ebcc45d3552d62d4eb65c45ed0a7ed1b1c8f998ad9a7240e9bf12e9 # b'bbb'
+    # r1, s1 = (18729973679190817623118111313771828863663483513774837152408759700444959675380395484441782281088986325568028125572313, 20359314114894398883483580278464256322867251438942572866576324564009786523201552170100051340293096655180830624945318)
+    # r2, s2 = (18729973679190817623118111313771828863663483513774837152408759700444959675380395484441782281088986325568028125572313, 33549408991998253599552853970526509375371474724984217940328017323799040205020694232660707492411777350321253243465321)
+    # cv   = Curve.get_curve('secp384r1')  ## <<---------- IMPORTANT: canviar curva 
     # n = cv.order   # depen de la curva
     # assert(r1==r2)
     # r = r1
@@ -128,13 +132,25 @@ if __name__=="__main__":
     ######
     # verificar firmes
     #####
-    cv = Curve.get_curve('secp521r1')
-    h = 12754525131182270164906514479094622284225761991228043252243252470621484204042243900898254513
-    m = to_bytes(h)
-    assert(h==int(m.hex(), 16))
-    s = (13263751945654689428818320349254352523665383868232033127797204777641368378796266236030071589, 32146358486064692139983911142954769262084504513119450036718289385737997760901924195607389145)
-    s = list_to_asn1(s)
-    print()
+    # canviar aqui
+    # h = 5572218363369325710622755349080158642966138912594496268137619782031501993116570169733490485653610033368823165157382759353621377017869899053722083617134315051
+    # m = to_bytes(h)
+    # assert(h==int(m.hex(), 16))
+    # cv = Curve.get_curve('secp521r1')
+    # pub_key = ECPublicKey(Point(183746701883757124826755524715142517173684662596382931014900106779410231692051781676595944589173697763631191386590655544007103631661168945042439908049126628,
+    #                     1601281877710170848847338512967691812903583180826685392300517340541208413570012609627603954169927449316111853622325474586718412581245331911174500642483080471,
+    #                     cv))
+    
+    # #####canviar tuple_firm per num atenea + comentar do_sign
+    # # sign = do_sign(message=m)
+    # tuple_sign = (636209411702914270661152765691119681822202526214190888223313780804486620649417809538075073320536552396577393606651565148805816715408423177786550261549407061, 
+    #               5665944802029951168612385975560511149978964867796618009229554554695039618868560857058585498994051253971070241725582009074416192241470619741064412300461145432) # read_ASN(sign.hex())
+    # found_sign = list_to_asn1(tuple_sign)
+
+    # is_valid = verify_ecdsa_signature(pub_key, m, found_sign)
+    # print("Apartado d: ")
+    # print(f"¿Firma válida? {is_valid}")
+    # print()
 
 
     ##########################
@@ -168,38 +184,40 @@ if __name__=="__main__":
     ## leer certificado##
     #####################
     # canviar fitxer
-    # cert = read_certificate("./certificat_examen.pem")
+    cert = read_certificate("./certificat_examen.pem")
 
     # calculs
-    # # print(cert)
-    # print("Emisor del certificado:", cert.issuer)
-    # print("Sujetos del certificado:", cert.subject)
-    # # print("Número de serie del certificado:", cert.serial_number)
-    # # print("Fecha de emisión:", cert.not_valid_before_utc)
-    # # print("Fecha de expiración:", cert.not_valid_after_utc)
-    # # signature = cert.signature
-    # # print("Firma del certificado (en hexadecimal):")
-    # # print(signature.hex())
-    # # print(f"signature alg: {cert.signature_algorithm_oid}")
-    # # signature --> emissor
-    # # pub key --> subjecte
-    # print(f"Pub key alg: {cert.public_key_algorithm_oid}")
-    # print(f"Pub key: {cert.public_key()}")
+    # print(cert)
+    print("Emisor del certificado:", cert.issuer)
+    print("Sujetos del certificado:", cert.subject)
+    # print("Número de serie del certificado:", cert.serial_number)
+    # print("Fecha de emisión:", cert.not_valid_before_utc)
+    # print("Fecha de expiración:", cert.not_valid_after_utc)
+    # signature = cert.signature
+    # print("Firma del certificado (en hexadecimal):")
+    # print(signature.hex())
+    # print(f"signature alg: {cert.signature_algorithm_oid}")
+    # signature --> emissor
+    # pub key --> subjecte
+    print(f"Pub key alg: {cert.public_key_algorithm_oid}")
+    print(f"Pub key: {cert.public_key()}")
 
-    # ## https://cryptography.io/en/latest/x509/reference/#cryptography.x509.oid.PublicKeyAlgorithmOID
+    ## https://cryptography.io/en/latest/x509/reference/#cryptography.x509.oid.PublicKeyAlgorithmOID
 
-    # if isinstance(cert.public_key(), rsa.RSAPublicKey):
-    #     # Obtener el módulo (n) y el exponente público (e)
-    #     public_numbers = cert.public_key().public_numbers()
-    #     n = public_numbers.n  # El módulo (n)
-    #     e = public_numbers.e  # El exponente público (e)
-    # elif isinstance(cert.public_key(), ec.EllipticCurvePublicKey):
-    #     # Obtener el punto público (x, y) en la curva
-    #     public_numbers = cert.public_key().public_numbers()
-    #     x = public_numbers.x
-    #     y = public_numbers.y
-    #     print(f"x: {x}")
-    #     print(f"curve: {cert.public_key().curve}")
+    if isinstance(cert.public_key(), rsa.RSAPublicKey):
+        # Obtener el módulo (n) y el exponente público (e)
+        public_numbers = cert.public_key().public_numbers()
+        n = public_numbers.n  # El módulo (n)
+        e = public_numbers.e  # El exponente público (e)
+        print(f"10 primeros digitos n (base 10): {str(n)[0:10]}")
+        print(f"longitud n bin: {len(bin(n)[2:])}")
+    elif isinstance(cert.public_key(), ec.EllipticCurvePublicKey):
+        # Obtener el punto público (x, y) en la curva
+        public_numbers = cert.public_key().public_numbers()
+        x = public_numbers.x
+        y = public_numbers.y
+        print(f"x: {x}")
+        print(f"curve: {cert.public_key().curve}")
 
 
 
