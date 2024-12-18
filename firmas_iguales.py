@@ -133,24 +133,25 @@ if __name__=="__main__":
     # verificar firmes
     #####
     ### canviar aqui
-    # h = 5054798442117127591724500032688361029006070602597001631666202630292382564415707378960510534884166224269106954339207077818729994100496690205852792396337683954
-    # m = to_bytes(h)
-    # assert(h==int(m.hex(), 16))
-    # cv = Curve.get_curve('secp521r1')
-    # pub_key = ECPublicKey(Point(872785165136472705968437467895851062511064516865924639595272527595480301456408650457524379208957144312020798606241143089663074020805825427104406241405322906,
-    #                     1701451270116869270874888201059032734503264666233163051504686840869174045725134430208919347287400364969304679845684879132508500999601313620354175169642509545,
-    #                     cv))
+    h = 5054798442117127591724500032688361029006070602597001631666202630292382564415707378960510534884166224269106954339207077818729994100496690205852792396337683954
+    m = to_bytes(h)
+    assert(h==int(m.hex(), 16))
+    cv = Curve.get_curve('secp521r1')
+    pub_key = ECPublicKey(Point(872785165136472705968437467895851062511064516865924639595272527595480301456408650457524379208957144312020798606241143089663074020805825427104406241405322906,
+                        1701451270116869270874888201059032734503264666233163051504686840869174045725134430208919347287400364969304679845684879132508500999601313620354175169642509545,
+                        cv))
     
-    # #####canviar tuple_firm per num atenea + comentar do_sign
-    # # sign = do_sign(message=m)
-    # tuple_sign = (2903424952217878237524098877101657423040767416959818316814340075822596425230064693695252671042454485404708119162437884591535043921689597199870569720030099537, 
-    #               6495630910300361854348151792532757485438594435311888321302144374497884854714891171210532359705924695526015056553103718534044499748132805426129516994983057385) # read_ASN(sign.hex())
-    # found_sign = list_to_asn1(tuple_sign)
+    #####canviar tuple_firm per num atenea + comentar do_sign
+    # sign = do_sign(message=m)
+    tuple_sign = (2903424952217878237524098877101657423040767416959818316814340075822596425230064693695252671042454485404708119162437884591535043921689597199870569720030099537, 
+                  6495630910300361854348151792532757485438594435311888321302144374497884854714891171210532359705924695526015056553103718534044499748132805426129516994983057385) # read_ASN(sign.hex())
+    found_sign = list_to_asn1(tuple_sign)
 
-    # is_valid = verify_ecdsa_signature(pub_key, m, found_sign)
-    # print("Apartado d: ")
-    # print(f"¿Firma válida? {is_valid}")
-    # print()
+    found_tuple = read_ASN(found_sign.hex())
+    print(tuple_sign==found_tuple)
+    is_valid = verify_ecdsa_signature(pub_key, m, found_sign)
+    print(f"¿Firma válida? {is_valid}")
+    print()
 
 
     ##########################
@@ -317,37 +318,37 @@ if __name__=="__main__":
     #####
     ### secreto ECDH
     #### 
-    from ecdsa import ellipticcurve, curves
+    # from ecdsa import ellipticcurve, curves
 
-    # Definir la curva secp256r1 (NIST P-256)
-    curve = curves.NIST256r
+    # # Definir la curva secp256r1 (NIST P-256)
+    # curve = curves.NIST256r
 
-    # Parámetros de la curva
-    p = curve.curve.p()  # Primo p
-    a = curve.curve.a()  # Coeficiente a
-    b = curve.curve.b()  # Coeficiente b
-    G = curve.generator  # Generador G
-    n = curve.order      # Orden del generador
+    # # Parámetros de la curva
+    # p = curve.curve.p()  # Primo p
+    # a = curve.curve.a()  # Coeficiente a
+    # b = curve.curve.b()  # Coeficiente b
+    # G = curve.generator  # Generador G
+    # n = curve.order      # Orden del generador
 
-    # Datos del problema
-    a_user = 99757649475609234237549415485681152677324456982430545871246393575012470071809  # Clave privada de A
+    # # Datos del problema
+    # a_user = 99757649475609234237549415485681152677324456982430545871246393575012470071809  # Clave privada de A
 
-    # Coordenadas de puntos PA y PB
-    PA_x = 87744816607305399275442674944533123176226781977937210870891457432366761376438
-    PA_y = 13417419862466398674231535476050331259653271279219391166652643517585218042006
-    PB_x = 30511547628871852199886669234658121462032186156868575823831141832176599888358
-    PB_y = 46509648060412632523158189782645734212057407169551913275990748702272520465220
+    # # Coordenadas de puntos PA y PB
+    # PA_x = 87744816607305399275442674944533123176226781977937210870891457432366761376438
+    # PA_y = 13417419862466398674231535476050331259653271279219391166652643517585218042006
+    # PB_x = 30511547628871852199886669234658121462032186156868575823831141832176599888358
+    # PB_y = 46509648060412632523158189782645734212057407169551913275990748702272520465220
 
-    # Crear los puntos PA y PB en la curva
-    PA = ellipticcurve.Point(curve.curve, PA_x, PA_y, n)
-    PB = ellipticcurve.Point(curve.curve, PB_x, PB_y, n)
+    # # Crear los puntos PA y PB en la curva
+    # PA = ellipticcurve.Point(curve.curve, PA_x, PA_y, n)
+    # PB = ellipticcurve.Point(curve.curve, PB_x, PB_y, n)
 
-    # Calcular el secreto común (clave privada a * PB)
-    shared_secret = a_user * PB
+    # # Calcular el secreto común (clave privada a * PB)
+    # shared_secret = a_user * PB
 
-    # Extraer la coordenada x del punto secreto compartido
-    x_shared = shared_secret.x()
+    # # Extraer la coordenada x del punto secreto compartido
+    # x_shared = shared_secret.x()
 
-    # Resultado
-    print(f"La componente x del punto secreto común es: {x_shared}")
+    # # Resultado
+    # print(f"La componente x del punto secreto común es: {x_shared}")
 
