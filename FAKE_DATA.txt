@@ -1,6 +1,0 @@
-START
-curve_name secp256k1
-Q 0x65d5b8bf9ab1801c9f168d4815994ad35f1dcb6ae6c7a1a303966b677b813b00 0xe6b865e529b8ecbf71cf966e900477d49ced5846d7662dd2dd11ccd55c0aff7f
-f 0 0
-m 0
-END
